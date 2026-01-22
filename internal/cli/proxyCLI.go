@@ -6,6 +6,7 @@ import (
 	"github.com/BarrettBr/RWND/internal/config"
 	"github.com/BarrettBr/RWND/internal/datastore"
 	"github.com/BarrettBr/RWND/internal/logger"
+	"github.com/BarrettBr/RWND/internal/proxy"
 )
 
 

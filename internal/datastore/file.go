@@ -16,6 +16,7 @@ type FileStore struct {
 
 // ------------
 
+// TODO: Finish File functions
 func NewFileStore(path string) *FileStore {
 
     return &FileStore{}
@@ -27,6 +28,7 @@ func (fs *FileStore) Append(rec model.Record) error {
 
 func (fs *FileStore) Stream() (<-chan model.Record, <-chan error) {
 
+    return make(<-chan model.Record), make(<-chan error)
 }
 
 func (fs *FileStore) Close() error {

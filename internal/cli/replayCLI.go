@@ -16,7 +16,10 @@ func runReplay(args []string) error {
 
     // TODO: Set up internal/replay
     store := datastore.NewFileStore(cfg.LogPath)
-    engine := replay.New(store)
+    engine, err := replay.New(store)
+    if err != nil {
+        return err
+    }
 
     // Used for stepping forward one bit pausing and then letting step recall runReplay or what not
     if step {
