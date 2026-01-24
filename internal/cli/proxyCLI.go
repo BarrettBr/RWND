@@ -21,11 +21,14 @@ func runProxy(args []string) error {
     logr := logger.New(store)
 
     // TODO: Set up internal/proxy
-    pxy := proxy.New(proxy.Config{
+    pxy, err := proxy.New(proxy.Options{
         ListenAddr: cfg.ListenAddr,
         Target: cfg.TargetURL,
         Logger: logr,
     })
+    if err != nil {
+        return err
+    }
 
     return pxy.Run()
 }

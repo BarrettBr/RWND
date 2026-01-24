@@ -6,21 +6,21 @@ import (
 	"net/url"
 )
 
-type Config struct {
+type AppConfig struct {
     ListenAddr string   // ":8080"
     TargetURL *url.URL
     LogPath string  // ".rwnd/logs/latest.jsonl"
 }
 
-func Load() Config {
+func Load() AppConfig {
     // Return a default Config struct and overwrite in arg call if specified overwrite
-    return Config{
+    return AppConfig{
         ListenAddr: ":8080",
         LogPath: ".rwnd/logs/latest.jsonl",
     }
 }
 
-func FromProxyArgs(args []string, cfg Config) (Config, error) {
+func FromProxyArgs(args []string, cfg AppConfig) (AppConfig, error) {
     // Function to parse arguments for the proxy command out
     // Logic in this function is referencing this Go by Example page
     // https://gobyexample.com/command-line-flags
@@ -45,16 +45,16 @@ func FromProxyArgs(args []string, cfg Config) (Config, error) {
     )
 
     if err := fs.Parse(args); err != nil {
-        return Config{}, err
+        return AppConfig{}, err
     }
 
     if *target == ""{
-        return Config{}, fmt.Errorf("Missing required --target")
+        return AppConfig{}, fmt.Errorf("Missing required --target")
     }
 
     u, err := url.Parse(*target)
     if err != nil {
-        return Config{}, fmt.Errorf("Invalid target URL: %v", err)
+        return AppConfig{}, fmt.Errorf("Invalid target URL: %v", err)
     }
 
     cfg.ListenAddr = *listen
@@ -64,7 +64,7 @@ func FromProxyArgs(args []string, cfg Config) (Config, error) {
     return cfg, nil
 }
 
-func FromReplayArgs(args []string, cfg Config) (Config, bool, error) {
+func FromReplayArgs(args []string, cfg AppConfig) (AppConfig, bool, error) {
     // Function to parse arguments for the replay command out
     fs := flag.NewFlagSet("replay", flag.ContinueOnError)
     fs.SetOutput(nil) // Set to nil so os.StdErr is used by default
@@ -82,9 +82,9 @@ func FromReplayArgs(args []string, cfg Config) (Config, bool, error) {
 	)
 
     if err := fs.Parse(args); err != nil {
-        return Config{}, false, err
+        return AppConfig{}, false, err
     }
 
     cfg.LogPath = *logPath
-    return Config{}, *step, nil
+    return AppConfig{}, *step, nil
 }
