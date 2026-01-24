@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"fmt"
+	"log"
 	"sync/atomic"
 	"time"
 
@@ -22,6 +22,8 @@ type Store interface {
 
 // ------------
 
+// TODO: Add close method so on app close it logs final ones in buffer instead of dropping
+
 func New(store Store) *Logger {
     l := &Logger{
         store: store,
@@ -35,7 +37,7 @@ func (l *Logger) Log(rec model.Record) {
     rec.ID = l.nextID.Add(1)
     rec.Timestamp = time.Now().UTC()
 
-    // TODO: We just send it for now, maybe count drop or something in default later
+    // TODO: We just send it for now, maybe count drop or if buffer is full deal with that
     select {
     case l.ch <- rec:
     default:
@@ -46,9 +48,9 @@ func (l *Logger) worker() {
     // Async worker func called in New
     // Iterate through loggers channel and store
     for rec := range l.ch {
-        err := l.store.Append(rec) // TODO: Eventually handle error instead of ignoring
+        err := l.store.Append(rec)
         if err != nil {
-            fmt.Println("Error occured while appending log:", err)
+            log.Printf("Logger append error: %s", err) // TODO: Eventually handle error instead of logging (Store / Callback)
         }
     }
 }

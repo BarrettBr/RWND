@@ -6,8 +6,6 @@ A local HTTP reverse proxy that logs request/response pairs and supports determi
 
 - Set up internal
   - datastore
-  - logger
-  - proxy
   - replay
 - Add unit testing
   - Test commands / log file / parsing
@@ -17,7 +15,7 @@ A local HTTP reverse proxy that logs request/response pairs and supports determi
 
 ## Description
 
-`RWND` is a lightweight CLI tool that sits in front of an HTTP service, records incoming requests and outgoing responses, and let's you replay them later in a determinstic, step-by-step way.
+`RWND` is a lightweight CLI tool that sits in front of an HTTP service, records & logs incoming requests and outgoing responses, and let's you replay them later in a determinstic, step-by-step way so as to allow for easy debugging of your services.
 
 It acts as a reverse proxy during recording, writing traffic to a structured log file, then replays that traffic back into a target service to help debug behavior, test changes, or reproduce tricky issues.
 
@@ -25,7 +23,7 @@ It acts as a reverse proxy during recording, writing traffic to a structured log
 
 I often have run into bugs that showed up only specific request sequences or timing conditions. Logging helped but they didn't let you re-run the problem. Because of this manual reproduction was slow, unreliable and sometimes impossible.
 
-Relying on normal ad-hoc test scripts and curl commands usually would fail to capute the shape of the traffic resulting in hard to reproduce bugs
+Relying on normal test scripts and curl commands usually would fail to capture the shape of the traffic resulting in hard to reproduce bugs
 
 So using `RWND` I can now:
 

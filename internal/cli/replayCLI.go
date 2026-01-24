@@ -15,7 +15,10 @@ func runReplay(args []string) error {
     }
 
     // TODO: Set up internal/replay
-    store := datastore.NewFileStore(cfg.LogPath)
+    store, err := datastore.NewFileStore(cfg.LogPath)
+    if err != nil {
+        return err
+    }
     engine, err := replay.New(store)
     if err != nil {
         return err

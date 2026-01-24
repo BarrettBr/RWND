@@ -17,7 +17,10 @@ func runProxy(args []string) error {
         return fmt.Errorf("Proxy args Error: %v", err)
     }
 
-    store := datastore.NewFileStore(cfg.LogPath)
+    store, err := datastore.NewFileStore(cfg.LogPath)
+    if err != nil {
+        return err
+    }
     logr := logger.New(store)
 
     // TODO: Set up internal/proxy
