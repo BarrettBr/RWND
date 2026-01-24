@@ -4,9 +4,6 @@ A local HTTP reverse proxy that logs request/response pairs and supports determi
 
 ## Todo
 
-- Set up internal
-  - datastore
-  - replay
 - Add unit testing
   - Test commands / log file / parsing
 - Add TUI / basic GUI

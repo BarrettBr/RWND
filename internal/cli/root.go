@@ -6,7 +6,6 @@ import (
 
 // Basic command Help pretty printer
 func PrintHelp() {
-    // TODO: Double check this aligns with expected behavior
     fmt.Println(`rwnd - local HTTP traffic recorder & replay tool
 
 Usage:
@@ -16,6 +15,7 @@ Usage:
 
 Examples:
   rwnd proxy --listen :8080 --target http://localhost:3000
+  rwnd proxy -h
   rwnd replay --step`)
 }
 

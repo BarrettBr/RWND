@@ -28,17 +28,16 @@ type Proxy struct {
     srv *http.Server
 }
 
-// TODO: Finish New / Run
 func New(opts Options) (*Proxy, error) {
     // Check Options
     if opts.ListenAddr == "" {
 		opts.ListenAddr = ":8080"
 	}
 	if opts.Target == nil {
-		return &Proxy{}, fmt.Errorf("Target is required")
+		return nil, fmt.Errorf("Target is required")
 	}
 	if opts.Logger == nil {
-		return &Proxy{}, fmt.Errorf("Logger is required")
+		return nil, fmt.Errorf("Logger is required")
 	}
 
     rp := httputil.NewSingleHostReverseProxy(opts.Target)
@@ -113,7 +112,8 @@ func (p *Proxy) Run() error {
     if p.srv == nil {
         return fmt.Errorf("Proxy Run: Server is nil")
     }
-    return nil
+    fmt.Printf("rwnd proxy listening on %s -> %s\n", p.srv.Addr, "(target)")
+    return p.srv.ListenAndServe()
 }
 
 // Internal types used for context capture

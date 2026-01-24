@@ -19,12 +19,11 @@ type FileStore struct {
 
 // ------------
 
-// TODO: Finish File functions
 func NewFileStore(path string) (*FileStore, error) {
     // Check if Directory exists and make it if not
     dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		panic("failed to create log directory: " + err.Error())
+		return nil, err
 	}
 
     // Open file as append only and open / create if it doesn't exist

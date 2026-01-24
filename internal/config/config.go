@@ -86,5 +86,5 @@ func FromReplayArgs(args []string, cfg AppConfig) (AppConfig, bool, error) {
     }
 
     cfg.LogPath = *logPath
-    return AppConfig{}, *step, nil
+    return cfg, *step, nil
 }
