@@ -2,6 +2,7 @@ package logger
 
 import (
 	"log"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -13,6 +14,8 @@ type Logger struct {
     store Store // Datastore
     ch chan model.Record // Channel to send records to get logged
     nextID atomic.Uint64 // Used so we can always call to next records id, atomic so if we use this we can increment it and not worry about duplicate ids in log
+    done chan struct{}
+    closeOnce sync.Once
 }
 
 // Store interface so regardless of FileStore / SQLiteStore / etc it will still be supported
@@ -22,12 +25,11 @@ type Store interface {
 
 // ------------
 
-// TODO: Add close method so on app close it logs final ones in buffer instead of dropping
-
 func New(store Store) *Logger {
     l := &Logger{
         store: store,
         ch: make(chan model.Record, 1024), // Buffered channel so non-blocking if logs grow quickly
+        done:  make(chan struct{}),
     }
     go l.worker()
     return l
@@ -47,10 +49,20 @@ func (l *Logger) Log(rec model.Record) {
 func (l *Logger) worker() {
     // Async worker func called in New
     // Iterate through loggers channel and store
+    defer close(l.done)
+
     for rec := range l.ch {
         err := l.store.Append(rec)
         if err != nil {
             log.Printf("Logger append error: %s", err) // TODO: Eventually handle error instead of logging (Store / Callback)
         }
     }
+}
+
+
+func (l *Logger) Close() {
+    l.closeOnce.Do(func() {
+        close(l.ch)
+        <-l.done
+    })
 }

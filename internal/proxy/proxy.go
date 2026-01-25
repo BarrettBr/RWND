@@ -72,6 +72,19 @@ func New(opts Options) (*Proxy, error) {
         return nil
     }
 
+    // Capture errors and log them
+    rp.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+        capAny := r.Context().Value(captureKey{})
+        cap, ok := capAny.(*capture)
+        if ok && cap != nil {
+            cap.rec.Response.Status = http.StatusBadGateway
+            cap.rec.Response.Body = []byte(err.Error())
+            cap.rec.Timestamp = time.Now().UTC()
+            opts.Logger.Log(cap.rec)
+        }
+        http.Error(w, "bad gateway", http.StatusBadGateway)
+    }
+
     mux := http.NewServeMux()
     
     // Handle request logging
@@ -103,6 +116,7 @@ func New(opts Options) (*Proxy, error) {
     server := &http.Server{
         Addr: opts.ListenAddr,
         Handler: mux,
+        ReadHeaderTimeout: 5 * time.Second,
     }
 
     return &Proxy{srv: server}, nil
@@ -113,7 +127,20 @@ func (p *Proxy) Run() error {
         return fmt.Errorf("Proxy Run: Server is nil")
     }
     fmt.Printf("rwnd proxy listening on %s -> %s\n", p.srv.Addr, "(target)")
-    return p.srv.ListenAndServe()
+
+    err := p.srv.ListenAndServe()
+    if err == http.ErrServerClosed {
+        return nil
+    }    
+    return err
+}
+
+func (p *Proxy) Shutdown(ctx context.Context) error {
+    if p.srv == nil {
+        return nil
+    }
+
+    return p.srv.Shutdown(ctx)
 }
 
 // Internal types used for context capture

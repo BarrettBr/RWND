@@ -65,7 +65,6 @@ func printRecord(prefix string, rec model.Record) {
 	}
 }
 
-
 func (e *Engine) Step() error {
     if e.done {
         return io.EOF
@@ -113,7 +112,6 @@ func (e *Engine) StepLoop() error {
 		}
 	}
 }
-
 
 func (e *Engine) Reset() {
     // Function used for TUI in future if wanting to restep from beginning

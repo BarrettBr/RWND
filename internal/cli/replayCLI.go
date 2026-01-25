@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"time"
+
 	"github.com/BarrettBr/RWND/internal/config"
 	"github.com/BarrettBr/RWND/internal/datastore"
 	"github.com/BarrettBr/RWND/internal/replay"
@@ -14,7 +16,7 @@ func runReplay(args []string) error {
         return err
     }
 
-    store, err := datastore.NewFileStore(cfg.LogPath)
+    store, err := datastore.NewFileStore(cfg.LogPath, 500 * time.Millisecond)
     if err != nil {
         return err
     }

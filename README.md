@@ -4,9 +4,11 @@ A local HTTP reverse proxy that logs request/response pairs and supports determi
 
 ## Todo
 
+- Dockerfile
 - Add unit testing
   - Test commands / log file / parsing
-- Add TUI / basic GUI
+- Add TUI (Bubble Tea)
+- Check out Gob vs JSON (Some benchmarks say potentially worse?) - Maybe also add body truncating
 
 ---
 

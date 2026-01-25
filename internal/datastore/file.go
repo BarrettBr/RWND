@@ -1,25 +1,32 @@
 package datastore
 
 import (
+	"bufio"
 	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/BarrettBr/RWND/internal/model"
 )
 
-// TODO: Maybe extend with json encoder / writer so less calls down the line?
 type FileStore struct {
     path string // Path of file
     mu sync.Mutex // Used for RW
     file *os.File // Used to hold the file itself
+    buf *bufio.Writer // Hold a buffered writer to lower total writes
+    enc *json.Encoder // Used to encoder / feed to buffer
+
+    flushInterval time.Duration
+    stopFlush     chan struct{}
+    stopOnce      sync.Once
 }
 
 // ------------
 
-func NewFileStore(path string) (*FileStore, error) {
+func NewFileStore(path string, flushInterval time.Duration) (*FileStore, error) {
     // Check if Directory exists and make it if not
     dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -29,10 +36,25 @@ func NewFileStore(path string) (*FileStore, error) {
     // Open file as append only and open / create if it doesn't exist
     f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
     if err != nil {
-        return &FileStore{}, err
+        return nil, err
     }
+
+    const memorySize = 64 * 1024
+
+    buf := bufio.NewWriterSize(f, memorySize)
+    enc := json.NewEncoder(buf)
     
-    fs := &FileStore{path: path, file: f}
+    fs := &FileStore{
+        path:path, 
+        file:f,
+        buf:buf,
+        enc:enc,
+        flushInterval: flushInterval,
+        stopFlush:     make(chan struct{}),
+    }
+
+    fs.startFlushLoop()
+
     return fs, nil
 }
 
@@ -40,19 +62,34 @@ func (fs *FileStore) Append(rec model.Record) error {
     fs.mu.Lock()
     defer fs.mu.Unlock()
 
-    data, err := json.Marshal(rec)
-    if err != nil {
-        return err
+    if fs.file == nil || fs.enc == nil {
+        return os.ErrClosed
     }
 
-    _, err = fs.file.Write(append(data, '\n'))
-    return err
+    return fs.enc.Encode(rec)
 }
 
 func (fs *FileStore) Stream() (<-chan model.Record, <-chan error) {
     // Iterate through logs streaming 1 at a time to the replay engine
     out := make(chan model.Record)
     errCh := make(chan error, 1)
+
+    // Push bufferred writes to the file before reading just to ensure it has something to read
+    fs.mu.Lock()
+    if fs.file == nil || fs.buf == nil {
+        fs.mu.Unlock()
+        errCh <- os.ErrClosed
+        close(out)
+        return out, errCh
+    }
+    flushErr := fs.buf.Flush()
+    fs.mu.Unlock()
+    
+    if flushErr != nil {
+        errCh <- flushErr
+        close(out)
+        return out, errCh
+    }
 
     // Anonymous function that runs in a seperate goroutine
     // this will stream out logs 1 at a time to the replay engine and clean up the channels upon exiting
@@ -85,15 +122,51 @@ func (fs *FileStore) Stream() (<-chan model.Record, <-chan error) {
     return out, errCh
 }
 
-func (fs *FileStore) Close() error {
-    fs.mu.Lock()
-    defer fs.mu.Unlock()
-
-    if fs.file == nil {
-        return nil
+func (fs *FileStore) startFlushLoop() {
+    if fs.flushInterval <= 0 {
+        return
     }
 
-    err := fs.file.Close()
-    fs.file = nil
-    return err
+    ticker := time.NewTicker(fs.flushInterval)
+    go func() {
+        defer ticker.Stop()
+
+        for {
+            select {
+            case <-ticker.C:
+                fs.mu.Lock()
+                // If closed, exit
+                if fs.file == nil || fs.buf == nil {
+                    fs.mu.Unlock()
+                    return
+                }
+                _ = fs.buf.Flush()
+                fs.mu.Unlock()
+            case <-fs.stopFlush:
+                return
+            }
+        }
+    }()
+}
+
+func (fs *FileStore) Close() error {
+    fs.stopOnce.Do(func() { close(fs.stopFlush) })
+    
+    fs.mu.Lock()
+    if fs.file == nil {
+        fs.mu.Unlock()
+        return nil
+    }
+    buf := fs.buf
+    file := fs.file
+    fs.file, fs.buf, fs.enc = nil, nil, nil
+    fs.mu.Unlock()
+
+    flushErr := buf.Flush()
+    closeErr := file.Close()
+
+    if flushErr != nil {
+        return flushErr
+    }
+    return closeErr
 }
