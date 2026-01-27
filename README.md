@@ -4,7 +4,6 @@ A local HTTP reverse proxy that logs request/response pairs and supports determi
 
 ## Todo
 
-- Dockerfile
 - Add TUI (Bubble Tea)
 - Check out Gob vs JSON (Some benchmarks say potentially worse?) - Maybe also add body truncating
 
@@ -81,6 +80,25 @@ Available Flags:
 - `--log`: Path to a recorded traffic log
 - `--step`: Step through each request interactively
 - `--help / -h`: Shows help
+
+### Docker
+
+RWND can be built and run as a minimal container image using the provided Dockerfile.
+
+Build the image:
+docker build -t rwnd .
+
+Run RWND Example:
+
+```dockerfile
+docker run --rm -it \
+ -p 8080:8080 \
+ -v $(pwd)/.rwnd:/app/.rwnd \
+ rwnd --listen :8080 --target http://example.com
+```
+
+RWND runs as a non-root user inside the container and writes logs to
+/app/.rwnd/logs so the command above would mount that to your working directories `./.rwnd/` folder.
 
 ## Contributing
 
