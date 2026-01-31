@@ -2,13 +2,6 @@
 
 A local HTTP reverse proxy that logs request/response pairs and supports deterministic replay for debugging.
 
-## Todo
-
-- Add TUI (Bubble Tea)
-- Check out Gob vs JSON (Some benchmarks say potentially worse?) - Maybe also add body truncating
-
----
-
 ## Description
 
 `RWND` is a lightweight CLI tool that sits in front of an HTTP service, records & logs incoming requests and outgoing responses, and let's you replay them later in a determinstic, step-by-step way so as to allow for easy debugging of your services.
