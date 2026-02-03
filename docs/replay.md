@@ -14,10 +14,7 @@ When you press `Enter`, the request is printed in a readable format.
 ## Replay Flow
 
 When you press `r`, the current request is re-sent to its recorded URL.
-The old response is printed, then a separator, then the new response.
-
-Replay requires that recorded URLs are absolute. If you recently changed
-versions or logs, re-record traffic so absolute URLs are stored.
+The old response is printed then the new response.
 
 ## Output Shape
 
