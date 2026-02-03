@@ -6,19 +6,19 @@ import (
 )
 
 type Record struct {
-    ID        uint64
-    Timestamp time.Time
+	ID        uint64
+	Timestamp time.Time
 
-    Request struct {
-        Method  string
-        URL     string
-        Headers http.Header
-        Body    []byte
-    }
+	Request struct {
+		Method  string
+		URL     string
+		Headers http.Header
+		Body    []byte
+	}
 
-    Response struct {
-        Status  int
-        Headers http.Header
-        Body    []byte
-    }
+	Response struct {
+		Status  int
+		Headers http.Header
+		Body    []byte
+	}
 }

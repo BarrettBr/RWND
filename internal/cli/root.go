@@ -6,7 +6,7 @@ import (
 
 // Basic command Help pretty printer
 func PrintHelp() {
-    fmt.Println(`rwnd - local HTTP traffic recorder & replay tool
+	fmt.Println(`rwnd - local HTTP traffic recorder & replay tool
 
 Usage:
   rwnd proxy  [options]   Start reverse proxy and record traffic
@@ -20,21 +20,21 @@ Examples:
 }
 
 func Run(args []string) error {
-    if len(args) == 0 {
-        PrintHelp()
-        return fmt.Errorf("No command specified")
-    }
+	if len(args) == 0 {
+		PrintHelp()
+		return fmt.Errorf("No command specified")
+	}
 
-    switch args[0]{
-    case "proxy":
-        return runProxy(args[1:])
-    case "replay":
-        return runReplay(args[1:])
-    case "help", "-h", "--help":
-        PrintHelp()
-        return nil
-    default:
-        PrintHelp()
-        return fmt.Errorf("Unknown command: %s", args[0])
-    }
+	switch args[0] {
+	case "proxy":
+		return runProxy(args[1:])
+	case "replay":
+		return runReplay(args[1:])
+	case "help", "-h", "--help":
+		PrintHelp()
+		return nil
+	default:
+		PrintHelp()
+		return fmt.Errorf("Unknown command: %s", args[0])
+	}
 }

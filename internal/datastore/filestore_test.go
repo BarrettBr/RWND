@@ -1,138 +1,137 @@
 package datastore_test
 
 import (
-    "os"
-    "path/filepath"
-    "testing"
-    "time"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
 
-    "github.com/BarrettBr/RWND/internal/datastore"
-    "github.com/BarrettBr/RWND/internal/model"
+	"github.com/BarrettBr/RWND/internal/datastore"
+	"github.com/BarrettBr/RWND/internal/model"
 )
 
 func TestFileStore_CreatesDirectoryAndFile(t *testing.T) {
-    dir := t.TempDir()
-    path := filepath.Join(dir, "logs", "rwnd.jsonl")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "logs", "rwnd.jsonl")
 
-    fs, err := datastore.NewFileStore(path, time.Second)
-    if err != nil {
-        t.Fatalf("NewFileStore: %v", err)
-    }
-    defer func() { _ = fs.Close() }()
+	fs, err := datastore.NewFileStore(path, time.Second)
+	if err != nil {
+		t.Fatalf("NewFileStore: %v", err)
+	}
+	defer func() { _ = fs.Close() }()
 
-    if _, err := os.Stat(path); err != nil {
-        t.Fatalf("Expected file to exist, stat error: %v", err)
-    }
+	if _, err := os.Stat(path); err != nil {
+		t.Fatalf("Expected file to exist, stat error: %v", err)
+	}
 }
 
 func TestFileStore_Append_SameCount(t *testing.T) {
-    dir := t.TempDir()
-    path := filepath.Join(dir, "logs", "log.jsonl")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "logs", "log.jsonl")
 
-    fs, err := datastore.NewFileStore(path, time.Second)
-    if err != nil {
-        t.Fatalf("NewFileStore: %v", err)
-    }
-    defer func() { _ = fs.Close() }()
+	fs, err := datastore.NewFileStore(path, time.Second)
+	if err != nil {
+		t.Fatalf("NewFileStore: %v", err)
+	}
+	defer func() { _ = fs.Close() }()
 
-    const N = 10
-    for i := 0; i < N; i++ {
-        if err := fs.Append(model.Record{}); err != nil {
-            t.Fatalf("Append %d: %v", i, err)
-        }
-    }
+	const N = 10
+	for i := 0; i < N; i++ {
+		if err := fs.Append(model.Record{}); err != nil {
+			t.Fatalf("Append %d: %v", i, err)
+		}
+	}
 
+	out, errCh := fs.Stream()
 
-    out, errCh := fs.Stream()
+	got := 0
+	for range out {
+		got++
+	}
+	if err := <-errCh; err != nil {
+		t.Fatalf("Stream error: %v", err)
+	}
 
-    got := 0
-    for range out {
-        got ++
-    }
-    if err := <-errCh; err != nil {
-        t.Fatalf("Stream error: %v", err)
-    }
-
-    if got != N {
-        t.Fatalf("Expected %d records and got %d", N, got)
-    }
+	if got != N {
+		t.Fatalf("Expected %d records and got %d", N, got)
+	}
 }
 
 func TestFileStore_Stream_EmptyReturnsNoError(t *testing.T) {
-    dir := t.TempDir()
-    path := filepath.Join(dir, "logs", "empty.jsonl")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "logs", "empty.jsonl")
 
-    fs, err := datastore.NewFileStore(path, time.Second)
-    if err != nil {
-        t.Fatalf("NewFileStore: %v", err)
-    }
-    defer func() { _ = fs.Close() }()
+	fs, err := datastore.NewFileStore(path, time.Second)
+	if err != nil {
+		t.Fatalf("NewFileStore: %v", err)
+	}
+	defer func() { _ = fs.Close() }()
 
-    out, errCh := fs.Stream()
+	out, errCh := fs.Stream()
 
-    got := 0
-    for range out {
-        got++
-    }
-    if err := <-errCh; err != nil {
-        t.Fatalf("Stream error: %v", err)
-    }
-    if got != 0 {
-        t.Fatalf("Expected 0 records and got %d", got)
-    }
+	got := 0
+	for range out {
+		got++
+	}
+	if err := <-errCh; err != nil {
+		t.Fatalf("Stream error: %v", err)
+	}
+	if got != 0 {
+		t.Fatalf("Expected 0 records and got %d", got)
+	}
 }
 
 func TestFileStore_AppendAfterClose(t *testing.T) {
-    dir := t.TempDir()
-    path := filepath.Join(dir, "logs", "closed.jsonl")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "logs", "closed.jsonl")
 
-    fs, err := datastore.NewFileStore(path, time.Second)
-    if err != nil {
-        t.Fatalf("NewFileStore: %v", err)
-    }
-    if err := fs.Close(); err != nil {
-        t.Fatalf("Close: %v", err)
-    }
+	fs, err := datastore.NewFileStore(path, time.Second)
+	if err != nil {
+		t.Fatalf("NewFileStore: %v", err)
+	}
+	if err := fs.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
 
-    if err := fs.Append(model.Record{}); err == nil {
-        t.Fatalf("Expected error on Append after Close")
-    }
+	if err := fs.Append(model.Record{}); err == nil {
+		t.Fatalf("Expected error on Append after Close")
+	}
 }
 
 func TestFileStore_StreamAfterClose(t *testing.T) {
-    dir := t.TempDir()
-    path := filepath.Join(dir, "logs", "closed.jsonl")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "logs", "closed.jsonl")
 
-    fs, err := datastore.NewFileStore(path, time.Second)
-    if err != nil {
-        t.Fatalf("NewFileStore: %v", err)
-    }
-    if err := fs.Close(); err != nil {
-        t.Fatalf("Close: %v", err)
-    }
+	fs, err := datastore.NewFileStore(path, time.Second)
+	if err != nil {
+		t.Fatalf("NewFileStore: %v", err)
+	}
+	if err := fs.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
 
-    out, errCh := fs.Stream()
-    for range out {
-        t.Fatalf("Expected no records after Close")
-    }
-    if err := <-errCh; err == nil {
-        t.Fatalf("Expected error on Stream after Close")
-    }
+	out, errCh := fs.Stream()
+	for range out {
+		t.Fatalf("Expected no records after Close")
+	}
+	if err := <-errCh; err == nil {
+		t.Fatalf("Expected error on Stream after Close")
+	}
 }
 
 func TestFileStore_Close_Idempotent(t *testing.T) {
-    dir := t.TempDir()
-    path := filepath.Join(dir, "logs", "close.jsonl")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "logs", "close.jsonl")
 
-    fs, err := datastore.NewFileStore(path, time.Second)
-    if err != nil {
-        t.Fatalf("NewFileStore: %v", err)
-    }
+	fs, err := datastore.NewFileStore(path, time.Second)
+	if err != nil {
+		t.Fatalf("NewFileStore: %v", err)
+	}
 
-    if err := fs.Close(); err != nil {
-        t.Fatalf("Close: %v", err)
-    }
-    if err := fs.Close(); err != nil {
-        t.Fatalf("Second Close: %v", err)
-    }
+	if err := fs.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
+	if err := fs.Close(); err != nil {
+		t.Fatalf("Second Close: %v", err)
+	}
 }
