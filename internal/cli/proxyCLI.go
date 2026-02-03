@@ -11,9 +11,9 @@ import (
 	"github.com/BarrettBr/RWND/internal/config"
 	"github.com/BarrettBr/RWND/internal/datastore"
 	"github.com/BarrettBr/RWND/internal/logger"
+	"github.com/BarrettBr/RWND/internal/logpath"
 	"github.com/BarrettBr/RWND/internal/proxy"
 )
-
 
 func runProxy(args []string) error {
     cfg, err := config.FromProxyArgs(args, config.Load())
@@ -22,7 +22,12 @@ func runProxy(args []string) error {
         return fmt.Errorf("Proxy args Error: %v", err)
     }
 
-    store, err := datastore.NewFileStore(cfg.LogPath, 500 * time.Millisecond)
+    logPath, err := logpath.ResolveRecordPath(cfg.LogPath, cfg.ListenAddr, cfg.TargetURL)
+    if err != nil {
+        return err
+    }
+
+    store, err := datastore.NewFileStore(logPath, 500*time.Millisecond)
     if err != nil {
         return err
     }
@@ -44,10 +49,10 @@ func runProxy(args []string) error {
 
     // Start server and feed back into a channel it's error
     runErrCh := make(chan error, 1)
-    go func(){runErrCh <- pxy.Run()}()
+    go func() { runErrCh <- pxy.Run() }()
 
     // If exit early with error return it otherwise if provided a terminate call the shutdown / close functions
-    select{
+    select {
     case err := <-runErrCh:
         logr.Close()
         _ = store.Close()
@@ -55,13 +60,13 @@ func runProxy(args []string) error {
     case sig := <-sigCh:
         fmt.Printf("\nReceived %s, shutting down...\n", sig)
 
-        ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
         defer cancel()
 
         _ = pxy.Shutdown(ctx)
         logr.Close()
         storeErr := store.Close()
-        runErr := <- runErrCh
+        runErr := <-runErrCh
 
         if storeErr != nil {
             return storeErr

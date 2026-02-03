@@ -5,6 +5,7 @@ import (
 
 	"github.com/BarrettBr/RWND/internal/config"
 	"github.com/BarrettBr/RWND/internal/datastore"
+	"github.com/BarrettBr/RWND/internal/logpath"
 	"github.com/BarrettBr/RWND/internal/replay"
 )
 
@@ -15,7 +16,12 @@ func runReplay(args []string) error {
         return err
     }
 
-    store, err := datastore.NewFileStore(cfg.LogPath, 500 * time.Millisecond)
+    logPath, err := logpath.ResolveReplayPath(cfg.LogPath)
+    if err != nil {
+        return err
+    }
+
+    store, err := datastore.NewFileStore(logPath, 500*time.Millisecond)
     if err != nil {
         return err
     }

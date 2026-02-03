@@ -1,22 +1,22 @@
 package config
 
 import (
-	"flag"
-	"fmt"
-	"net/url"
+    "flag"
+    "fmt"
+    "net/url"
 )
 
 type AppConfig struct {
-    ListenAddr string   // ":8080"
-    TargetURL *url.URL
-    LogPath string  // ".rwnd/logs/latest.jsonl"
+    ListenAddr string // ":8080"
+    TargetURL  *url.URL
+    LogPath    string // ".rwnd/logs"
 }
 
 func Load() AppConfig {
     // Return a default Config struct and overwrite in arg call if specified overwrite
     return AppConfig{
         ListenAddr: ":8080",
-        LogPath: ".rwnd/logs/latest.jsonl",
+        LogPath:    ".rwnd/logs",
     }
 }
 
@@ -41,7 +41,7 @@ func FromProxyArgs(args []string, cfg AppConfig) (AppConfig, error) {
     logPath := fs.String(
         "log",
         cfg.LogPath,
-        "Path to log file",
+        "Path to log file or directory",
     )
 
     if err := fs.Parse(args); err != nil {
@@ -70,10 +70,10 @@ func FromReplayArgs(args []string, cfg AppConfig) (AppConfig, error) {
     fs.SetOutput(nil) // Set to nil so os.StdErr is used by default
 
     logPath := fs.String(
-		"log",
-		cfg.LogPath,
-		"Path to log file",
-	)
+        "log",
+        cfg.LogPath,
+        "Path to log file or directory",
+    )
 
     if err := fs.Parse(args); err != nil {
         return AppConfig{}, err

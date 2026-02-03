@@ -6,7 +6,7 @@ A local HTTP reverse proxy that logs request/response pairs and supports determi
 
 `RWND` is a lightweight CLI tool that sits in front of an HTTP service, records & logs incoming requests and outgoing responses, and let's you replay them later in a determinstic, step-by-step way so as to allow for easy debugging of your services.
 
-It acts as a reverse proxy during recording, writing traffic to a structured log file, then replays that traffic back into a target service to help debug behavior, test changes, or reproduce tricky issues.
+It acts as a reverse proxy during recording, writing traffic to structured log files, then replays that traffic back into a target service to help debug behavior, test changes, or reproduce tricky issues.
 
 ## Motivation
 
@@ -56,7 +56,7 @@ Available Flags:
 
 - `--listen`: Address to listen on (Default `:8080`)
 - `--target`: Upstream service to forward traffic to
-- `--log`: Path to write recorded traffic (Defaults to `.rwnd/logs/latest.jsonl`)
+- `--log`: Path to write recorded traffic (Defaults to `.rwnd/logs/`)
 - `--help / -h`: Shows help
 
 ### Replay Mode
@@ -67,9 +67,11 @@ Replay mode is used for replaying the recorded data and being able to step throu
 rwnd replay [options]
 ```
 
+By default, replay uses the most recent log file in `.rwnd/logs/`.
+
 Available Flags:
 
-- `--log`: Path to a recorded traffic log
+- `--log`: Path to a recorded traffic log or log directory
 - `--help / -h`: Shows help
 
 ### Docker

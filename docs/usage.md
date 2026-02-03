@@ -16,11 +16,11 @@ Start the proxy and point it at your backend:
 rwnd proxy --listen :8080 --target http://localhost:3000
 ```
 
-Logs are written to `.rwnd/logs/latest.jsonl` by default.
+Logs are written to `.rwnd/logs/` by default, one file per proxy run.
 
 ## Replay Traffic
 
-Replay is interactive by default:
+Replay is interactive by default and uses the latest log file:
 
 ```bash
 rwnd replay
@@ -44,8 +44,8 @@ Proxy:
 
 - `--listen`: Address to listen on (default `:8080`)
 - `--target`: Upstream service to forward traffic to (required)
-- `--log`: Path to write recorded traffic (default `.rwnd/logs/latest.jsonl`)
+- `--log`: Path to write recorded traffic (default `.rwnd/logs/`)
 
 Replay:
 
-- `--log`: Path to a recorded traffic log (default `.rwnd/logs/latest.jsonl`)
+- `--log`: Path to a recorded traffic log or log directory (default `.rwnd/logs/`)

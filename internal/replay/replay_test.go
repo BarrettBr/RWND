@@ -3,6 +3,8 @@ package replay_test
 import (
 	"errors"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/BarrettBr/RWND/internal/model"
@@ -65,5 +67,59 @@ func TestReplay_Step_EOFWhenNoRecords(t *testing.T) {
 
 	if rec, err := e.Step(); err != io.EOF || rec != nil {
 		t.Fatalf("expected io.EOF on second Step, got rec=%v err=%v", rec, err)
+	}
+}
+
+func TestReplay_Replay_RequiresAbsoluteURL(t *testing.T) {
+	s := &fakeStore{
+		recCh: make(chan model.Record, 1),
+		errCh: make(chan error, 1),
+	}
+	e, err := replay.New(s)
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+
+	rec := model.Record{}
+	rec.Request.Method = "GET"
+	rec.Request.URL = "/relative"
+
+	if got, err := e.Replay(rec); err == nil || got != nil {
+		t.Fatalf("expected error for relative URL, got rec=%v err=%v", got, err)
+	}
+}
+
+func TestReplay_Replay_SendsRequest(t *testing.T) {
+	s := &fakeStore{
+		recCh: make(chan model.Record, 1),
+		errCh: make(chan error, 1),
+	}
+	e, err := replay.New(s)
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Test", "ok")
+		_, _ = w.Write([]byte("pong"))
+	}))
+	defer ts.Close()
+
+	rec := model.Record{}
+	rec.Request.Method = "GET"
+	rec.Request.URL = ts.URL + "/ping"
+
+	got, err := e.Replay(rec)
+	if err != nil {
+		t.Fatalf("Replay: %v", err)
+	}
+	if got.Response.Status != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, got.Response.Status)
+	}
+	if string(got.Response.Body) != "pong" {
+		t.Fatalf("expected body pong, got %q", string(got.Response.Body))
+	}
+	if got.Response.Headers.Get("X-Test") != "ok" {
+		t.Fatalf("expected header X-Test=ok")
 	}
 }
