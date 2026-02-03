@@ -13,7 +13,6 @@ import (
 	"github.com/BarrettBr/RWND/internal/model"
 )
 
-
 type Logger interface {
 	Log(model.Record)
 }
@@ -86,7 +85,7 @@ func New(opts Options) (*Proxy, error) {
     }
 
     mux := http.NewServeMux()
-    
+
     // Handle request logging
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         // Read and copy body like we did with responses above
@@ -103,8 +102,15 @@ func New(opts Options) (*Proxy, error) {
         // Create a record
         var rec model.Record
         rec.Request.Method = r.Method
-        rec.Request.URL = r.URL.String()
+        reqURL := r.URL
+        if !reqURL.IsAbs() {
+            reqURL = opts.Target.ResolveReference(reqURL)
+        }
+        rec.Request.URL = reqURL.String()
         rec.Request.Headers = r.Header.Clone()
+        if r.Host != "" {
+            rec.Request.Headers.Set("Host", r.Host)
+        }
         rec.Request.Body = reqBody
 
         // Attach record to context of the request
@@ -131,7 +137,7 @@ func (p *Proxy) Run() error {
     err := p.srv.ListenAndServe()
     if err == http.ErrServerClosed {
         return nil
-    }    
+    }
     return err
 }
 

@@ -41,13 +41,10 @@ func TestFromProxyArgs_AppliesOverrides(t *testing.T) {
 	}
 }
 
-func TestFromReplayArgs_DefaultsAndStep(t *testing.T) {
-	cfg, step, err := config.FromReplayArgs([]string{"--step", "--log", "x.jsonl"}, config.Load())
+func TestFromReplayArgs_AppliesLogOverride(t *testing.T) {
+    cfg, err := config.FromReplayArgs([]string{"--log", "x.jsonl"}, config.Load())
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
-	}
-	if !step {
-		t.Fatalf("Expected step=true")
 	}
 	if cfg.LogPath != "x.jsonl" {
 		t.Fatalf("Expected LogPath=x.jsonl, got %q", cfg.LogPath)

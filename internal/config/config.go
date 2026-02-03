@@ -48,7 +48,7 @@ func FromProxyArgs(args []string, cfg AppConfig) (AppConfig, error) {
         return AppConfig{}, err
     }
 
-    if *target == ""{
+    if *target == "" {
         return AppConfig{}, fmt.Errorf("Missing required --target")
     }
 
@@ -64,7 +64,7 @@ func FromProxyArgs(args []string, cfg AppConfig) (AppConfig, error) {
     return cfg, nil
 }
 
-func FromReplayArgs(args []string, cfg AppConfig) (AppConfig, bool, error) {
+func FromReplayArgs(args []string, cfg AppConfig) (AppConfig, error) {
     // Function to parse arguments for the replay command out
     fs := flag.NewFlagSet("replay", flag.ContinueOnError)
     fs.SetOutput(nil) // Set to nil so os.StdErr is used by default
@@ -75,16 +75,10 @@ func FromReplayArgs(args []string, cfg AppConfig) (AppConfig, bool, error) {
 		"Path to log file",
 	)
 
-	step := fs.Bool(
-		"step",
-		false,
-		"Step through requests one at a time",
-	)
-
     if err := fs.Parse(args); err != nil {
-        return AppConfig{}, false, err
+        return AppConfig{}, err
     }
 
     cfg.LogPath = *logPath
-    return cfg, *step, nil
+    return cfg, nil
 }

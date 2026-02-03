@@ -8,9 +8,8 @@ import (
 	"github.com/BarrettBr/RWND/internal/replay"
 )
 
-
 func runReplay(args []string) error {
-    cfg, step, err := config.FromReplayArgs(args, config.Load())
+    cfg, err := config.FromReplayArgs(args, config.Load())
     if err != nil {
         PrintHelp()
         return err
@@ -25,10 +24,5 @@ func runReplay(args []string) error {
         return err
     }
 
-    // Used for stepping forward one bit pausing and then letting step recall runReplay or what not
-    if step {
-        return engine.StepLoop()
-    }
-
-    return engine.Run()
+    return engine.StepLoop()
 }

@@ -57,7 +57,6 @@ Available Flags:
 - `--listen`: Address to listen on (Default `:8080`)
 - `--target`: Upstream service to forward traffic to
 - `--log`: Path to write recorded traffic (Defaults to `.rwnd/logs/latest.jsonl`)
-- `--verbose`: Enables verbose logging
 - `--help / -h`: Shows help
 
 ### Replay Mode
@@ -71,7 +70,6 @@ rwnd replay [options]
 Available Flags:
 
 - `--log`: Path to a recorded traffic log
-- `--step`: Step through each request interactively
 - `--help / -h`: Shows help
 
 ### Docker
