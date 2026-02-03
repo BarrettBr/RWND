@@ -1,5 +1,7 @@
 # RWND
-
+[![Latest Release](https://img.shields.io/github/v/release/BarrettBr/RWND.svg)](https://github.com/BarrettBr/RWND/releases)
+<a href="https://pkg.go.dev/github.com/BarrettBr/RWND"><img src="https://pkg.go.dev/badge/github.com/BarrettBr/RWND.svg" alt="Go Reference"></a>
+[![Go Report Card](https://goreportcard.com/badge/github.com/BarrettBr/RWND)](https://goreportcard.com/report/github.com/BarrettBr/RWND)  
 A local HTTP reverse proxy that logs request/response pairs and supports deterministic replay for debugging.
 
 ## Description

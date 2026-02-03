@@ -101,8 +101,8 @@ func (e *Engine) isStreamDone() bool {
 }
 
 
+// Step returns the next record, or io.EOF when the stream ends.
 func (e *Engine) Step() (*model.Record, error) {
-	// Step returns the next record, or io.EOF when the stream ends.
 	if e.done {
 		return nil, io.EOF
 	}
@@ -153,8 +153,8 @@ func (e *Engine) handleReplay(current *model.Record) {
     printResponsePretty("New Response", replayed.Response)
 }
 
+// StepLoop runs the prompt for stepping and replaying.
 func (e *Engine) StepLoop() error {
-	// StepLoop runs the prompt for stepping and replaying.
 	if e.recCh == nil && e.errCh == nil {
 		e.recCh, e.errCh = e.store.Stream()
 	}
