@@ -1,3 +1,4 @@
+// Package config defines application configuration and CLI argument parsing.
 package config
 
 import (
@@ -6,12 +7,14 @@ import (
 	"net/url"
 )
 
+// AppConfig holds configuration from defaults and CLI flags.
 type AppConfig struct {
 	ListenAddr string // ":8080"
 	TargetURL  *url.URL
 	LogPath    string // ".rwnd/logs"
 }
 
+// Load returns the default application configuration.
 func Load() AppConfig {
 	// Return a default Config struct and overwrite in arg call if specified overwrite
 	return AppConfig{
@@ -20,6 +23,7 @@ func Load() AppConfig {
 	}
 }
 
+// FromProxyArgs parses proxy CLI arguments and applies them to cfg.
 func FromProxyArgs(args []string, cfg AppConfig) (AppConfig, error) {
 	// Function to parse arguments for the proxy command out
 	// Logic in this function is referencing this Go by Example page
@@ -64,6 +68,7 @@ func FromProxyArgs(args []string, cfg AppConfig) (AppConfig, error) {
 	return cfg, nil
 }
 
+// FromReplayArgs parses replay CLI arguments and applies them to cfg.
 func FromReplayArgs(args []string, cfg AppConfig) (AppConfig, error) {
 	// Function to parse arguments for the replay command out
 	fs := flag.NewFlagSet("replay", flag.ContinueOnError)

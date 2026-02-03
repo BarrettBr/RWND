@@ -1,3 +1,4 @@
+// Package proxy implements a reverse proxy that records traffic.
 package proxy
 
 import (
@@ -13,20 +14,24 @@ import (
 	"github.com/BarrettBr/RWND/internal/model"
 )
 
+// Logger stores recorded traffic from the proxy.
 type Logger interface {
 	Log(model.Record)
 }
 
+// Options configures the proxy server.
 type Options struct {
 	ListenAddr string
 	Target     *url.URL
 	Logger     Logger
 }
 
+// Proxy is a reverse proxy server that records traffic.
 type Proxy struct {
-	srv *http.Server
+    srv *http.Server
 }
 
+// New constructs a Proxy using the provided options.
 func New(opts Options) (*Proxy, error) {
 	// Check Options
 	if opts.ListenAddr == "" {
@@ -41,7 +46,7 @@ func New(opts Options) (*Proxy, error) {
 
 	rp := httputil.NewSingleHostReverseProxy(opts.Target)
 
-	// Capture / Log the repsonse inside the same record that the request came from
+	// Capture / Log the response inside the same record that the request came from
 	rp.ModifyResponse = func(resp *http.Response) error {
 		// Get the responses stored capture and type assert it
 		// Use empty struct so overlapping package keys don't mess with this as well as the empty struct being efficient / easy to deal with
@@ -128,6 +133,7 @@ func New(opts Options) (*Proxy, error) {
 	return &Proxy{srv: server}, nil
 }
 
+// Run starts the proxy server.
 func (p *Proxy) Run() error {
 	if p.srv == nil {
 		return fmt.Errorf("Proxy Run: Server is nil")
@@ -141,6 +147,7 @@ func (p *Proxy) Run() error {
 	return err
 }
 
+// Shutdown gracefully stops the proxy server.
 func (p *Proxy) Shutdown(ctx context.Context) error {
 	if p.srv == nil {
 		return nil

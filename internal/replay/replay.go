@@ -1,3 +1,4 @@
+// Package replay provides interactive replay of recorded traffic.
 package replay
 
 import (
@@ -13,10 +14,12 @@ import (
 	"github.com/BarrettBr/RWND/internal/model"
 )
 
+// Store streams recorded traffic to the replay engine.
 type Store interface {
 	Stream() (<-chan model.Record, <-chan error)
 }
 
+// Engine drives record stepping and replay.
 type Engine struct {
 	store  Store
 	client *http.Client
@@ -26,8 +29,8 @@ type Engine struct {
 	done  bool
 }
 
+// New initializes a replay engine for a given store.
 func New(store Store) (*Engine, error) {
-	// New initializes a replay engine for a given store.
 	if store == nil {
 		return nil, fmt.Errorf("Store not defined")
 	}
@@ -85,18 +88,29 @@ func printBody(body []byte) {
 	fmt.Println("  " + strings.ReplaceAll(string(body), "\n", "\n  "))
 }
 
+func (e *Engine) ensureStream() {
+    // Helper function added to reduce cyclomatic complexity of Step
+	if e.recCh == nil && e.errCh == nil {
+		e.recCh, e.errCh = e.store.Stream()
+	}
+}
+
+func (e *Engine) isStreamDone() bool {
+    // Helper function added to reduce cyclomatic complexity of Step
+	return e.recCh == nil && e.errCh == nil
+}
+
+
 func (e *Engine) Step() (*model.Record, error) {
 	// Step returns the next record, or io.EOF when the stream ends.
 	if e.done {
 		return nil, io.EOF
 	}
 
-	if e.recCh == nil && e.errCh == nil {
-		e.recCh, e.errCh = e.store.Stream()
-	}
+	e.ensureStream()
 
 	for {
-		if e.recCh == nil && e.errCh == nil {
+		if e.isStreamDone() {
 			e.done = true
 			return nil, io.EOF
 		}
@@ -124,6 +138,21 @@ func (e *Engine) Step() (*model.Record, error) {
 	}
 }
 
+func (e *Engine) handleReplay(current *model.Record) {
+    if current == nil {
+        fmt.Println("No record to replay yet")
+        return
+    }
+    replayed, err := e.Replay(*current)
+    if err != nil {
+        fmt.Printf("Replay error: %v\n", err)
+        return
+    }
+    printResponsePretty("Old Response", current.Response)
+    fmt.Println("---")
+    printResponsePretty("New Response", replayed.Response)
+}
+
 func (e *Engine) StepLoop() error {
 	// StepLoop runs the prompt for stepping and replaying.
 	if e.recCh == nil && e.errCh == nil {
@@ -140,18 +169,7 @@ func (e *Engine) StepLoop() error {
 		}
 
 		if s == "r" {
-			if current == nil {
-				fmt.Println("No record to replay yet")
-				continue
-			}
-			replayed, err := e.Replay(*current)
-			if err != nil {
-				fmt.Printf("Replay error: %v\n", err)
-				continue
-			}
-			printResponsePretty("Old Response", current.Response)
-			fmt.Println("---")
-			printResponsePretty("New Response", replayed.Response)
+			e.handleReplay(current)
 			continue
 		}
 
@@ -169,15 +187,15 @@ func (e *Engine) StepLoop() error {
 	}
 }
 
+// Reset clears stream state so stepping can restart.
 func (e *Engine) Reset() {
-	// Reset clears stream state so stepping can restart.
 	e.recCh = nil
 	e.errCh = nil
 	e.done = false
 }
 
+// Replay re-sends a recorded request and returns the new response.
 func (e *Engine) Replay(rec model.Record) (*model.Record, error) {
-	// Replay re-sends a recorded request and returns the new response.
 	reqURL, err := url.Parse(rec.Request.URL)
 	if err != nil {
 		return nil, fmt.Errorf("Replay invalid request URL: %w", err)

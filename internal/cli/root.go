@@ -1,10 +1,11 @@
+// Package cli implements the command-line interface for RWND.
 package cli
 
 import (
 	"fmt"
 )
 
-// Basic command Help pretty printer
+// PrintHelp prints CLI usage and examples.
 func PrintHelp() {
 	fmt.Println(`rwnd - local HTTP traffic recorder & replay tool
 
@@ -19,6 +20,7 @@ Examples:
   rwnd replay --step`)
 }
 
+// Run runs CLI subcommands based on args.
 func Run(args []string) error {
 	if len(args) == 0 {
 		PrintHelp()

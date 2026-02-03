@@ -1,3 +1,4 @@
+// Package datastore provides persistence for recorded traffic logs.
 package datastore
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/BarrettBr/RWND/internal/model"
 )
 
+// FileStore writes and reads records from a JSONL file.
 type FileStore struct {
 	path string        // Path of file
 	mu   sync.Mutex    // Used for RW
@@ -26,6 +28,7 @@ type FileStore struct {
 
 // ------------
 
+// NewFileStore creates a FileStore at the given path and starts the flush loop.
 func NewFileStore(path string, flushInterval time.Duration) (*FileStore, error) {
 	// Check if Directory exists and make it if not
 	dir := filepath.Dir(path)
@@ -58,6 +61,7 @@ func NewFileStore(path string, flushInterval time.Duration) (*FileStore, error) 
 	return fs, nil
 }
 
+// Append writes a record to the file.
 func (fs *FileStore) Append(rec model.Record) error {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
@@ -69,6 +73,7 @@ func (fs *FileStore) Append(rec model.Record) error {
 	return fs.enc.Encode(rec)
 }
 
+// Stream returns a channel of records and a channel of errors.
 func (fs *FileStore) Stream() (<-chan model.Record, <-chan error) {
 	// Iterate through logs streaming 1 at a time to the replay engine
 	out := make(chan model.Record)
@@ -91,7 +96,7 @@ func (fs *FileStore) Stream() (<-chan model.Record, <-chan error) {
 		return out, errCh
 	}
 
-	// Anonymous function that runs in a seperate goroutine
+	// Anonymous function that runs in a separate goroutine
 	// this will stream out logs 1 at a time to the replay engine and clean up the channels upon exiting
 	go func() {
 		defer close(out)
@@ -149,6 +154,7 @@ func (fs *FileStore) startFlushLoop() {
 	}()
 }
 
+// Close flushes buffers and closes the underlying file.
 func (fs *FileStore) Close() error {
 	fs.stopOnce.Do(func() { close(fs.stopFlush) })
 

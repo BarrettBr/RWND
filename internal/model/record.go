@@ -1,3 +1,4 @@
+// Package model defines shared structures for captured traffic.
 package model
 
 import (
@@ -5,6 +6,7 @@ import (
 	"time"
 )
 
+// Record captures a request/response pair and metadata.
 type Record struct {
 	ID        uint64
 	Timestamp time.Time

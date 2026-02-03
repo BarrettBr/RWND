@@ -1,3 +1,4 @@
+// Package logger asynchronously pushes records to a datastore.
 package logger
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/BarrettBr/RWND/internal/model"
 )
 
+// Logger assigns IDs and timestamps and writes records to a store.
 type Logger struct {
 	store     Store             // Datastore
 	ch        chan model.Record // Channel to send records to get logged
@@ -17,13 +19,14 @@ type Logger struct {
 	closeOnce sync.Once
 }
 
-// Store interface so regardless of FileStore / SQLiteStore / etc it will still be supported
+// Store is the minimal interface required by Logger.
 type Store interface {
 	Append(model.Record) error
 }
 
 // ------------
 
+// New creates a Logger and starts its background worker.
 func New(store Store) *Logger {
 	l := &Logger{
 		store: store,
@@ -34,6 +37,7 @@ func New(store Store) *Logger {
 	return l
 }
 
+// Log enqueues a record to be persisted.
 func (l *Logger) Log(rec model.Record) {
 	rec.ID = l.nextID.Add(1)
 	rec.Timestamp = time.Now().UTC()
@@ -58,6 +62,7 @@ func (l *Logger) worker() {
 	}
 }
 
+// Close flushes and stops the logger worker.
 func (l *Logger) Close() {
 	l.closeOnce.Do(func() {
 		close(l.ch)

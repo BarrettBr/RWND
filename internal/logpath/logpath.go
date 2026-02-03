@@ -1,3 +1,4 @@
+// Package logpath provides helpers for resolving log file paths.
 package logpath
 
 import (
@@ -13,6 +14,7 @@ import (
 
 var logPrefixRe = regexp.MustCompile(`^(\d{3})_`)
 
+// ResolveRecordPath returns a log file path for recording.
 func ResolveRecordPath(path string, listenAddr string, target *url.URL) (string, error) {
 	// Returns a log file path. If path is a directory or has no extension,
 	// it creates a new numbered log file name under that directory.
@@ -32,6 +34,7 @@ func ResolveRecordPath(path string, listenAddr string, target *url.URL) (string,
 	return path, nil
 }
 
+// ResolveReplayPath returns the log file path to replay.
 func ResolveReplayPath(path string) (string, error) {
 	// Returns a log file path. If path is a directory or has no extension,
 	// it selects the highest numbered log file from that directory.

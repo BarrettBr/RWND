@@ -5,7 +5,7 @@ This doc covers basic usage for recording and replaying traffic.
 ## Install
 
 ```bash
-go install github.com/BarrettBr/RWND@latest
+go install github.com/BarrettBr/RWND/cmd/rwnd@latest
 ```
 
 ## Record Traffic

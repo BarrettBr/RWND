@@ -27,7 +27,7 @@ By doing this I was able to turn this from guesswork or just harder generalized 
 1. Install `rwnd`
 
 ```bash
-go install github.com/yourusername/rwnd@latest
+go install github.com/BarrettBr/RWND/cmd/rwnd@latest
 ```
 
 2. Record traffic
