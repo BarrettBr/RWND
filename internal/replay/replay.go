@@ -89,17 +89,16 @@ func printBody(body []byte) {
 }
 
 func (e *Engine) ensureStream() {
-    // Helper function added to reduce cyclomatic complexity of Step
+	// Helper function added to reduce cyclomatic complexity of Step
 	if e.recCh == nil && e.errCh == nil {
 		e.recCh, e.errCh = e.store.Stream()
 	}
 }
 
 func (e *Engine) isStreamDone() bool {
-    // Helper function added to reduce cyclomatic complexity of Step
+	// Helper function added to reduce cyclomatic complexity of Step
 	return e.recCh == nil && e.errCh == nil
 }
-
 
 // Step returns the next record, or io.EOF when the stream ends.
 func (e *Engine) Step() (*model.Record, error) {
@@ -139,18 +138,18 @@ func (e *Engine) Step() (*model.Record, error) {
 }
 
 func (e *Engine) handleReplay(current *model.Record) {
-    if current == nil {
-        fmt.Println("No record to replay yet")
-        return
-    }
-    replayed, err := e.Replay(*current)
-    if err != nil {
-        fmt.Printf("Replay error: %v\n", err)
-        return
-    }
-    printResponsePretty("Old Response", current.Response)
-    fmt.Println("---")
-    printResponsePretty("New Response", replayed.Response)
+	if current == nil {
+		fmt.Println("No record to replay yet")
+		return
+	}
+	replayed, err := e.Replay(*current)
+	if err != nil {
+		fmt.Printf("Replay error: %v\n", err)
+		return
+	}
+	printResponsePretty("Old Response", current.Response)
+	fmt.Println("---")
+	printResponsePretty("New Response", replayed.Response)
 }
 
 // StepLoop runs the prompt for stepping and replaying.

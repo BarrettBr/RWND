@@ -28,7 +28,7 @@ type Options struct {
 
 // Proxy is a reverse proxy server that records traffic.
 type Proxy struct {
-    srv *http.Server
+	srv *http.Server
 }
 
 // New constructs a Proxy using the provided options.
